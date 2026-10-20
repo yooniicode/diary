@@ -5,6 +5,7 @@ baseurl: ""
 author: Yoonji Lee
 main_blog: https://yooniicode.site
 timezone: Asia/Seoul
+future: true   # 글 날짜를 그날 23:50 으로 적으므로 당일 발행 시 미래 글도 포함
 lang: ko
 permalink: /:year/:month/:day/
 plugins:
