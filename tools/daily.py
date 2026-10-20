@@ -103,6 +103,26 @@ def save_state(state: dict) -> None:
 
 # ---------- 녹화 파일 수집 ----------
 
+def is_in_use(f: Path) -> bool | None:
+    """Windows: 다른 프로세스(OBS)가 파일을 열어 두고 있으면 True.
+    공유 모드 0 으로 열어 보고 ERROR_SHARING_VIOLATION(32)이면 사용 중.
+    판단 불가(비 Windows 등)면 None."""
+    if os.name != "nt":
+        return None
+    import ctypes
+    from ctypes import wintypes
+    k32 = ctypes.windll.kernel32
+    k32.CreateFileW.restype = wintypes.HANDLE
+    GENERIC_READ, OPEN_EXISTING = 0x80000000, 3
+    INVALID = wintypes.HANDLE(-1).value
+    h = k32.CreateFileW(str(f), GENERIC_READ, 0, None, OPEN_EXISTING, 0, None)
+    if h == INVALID:
+        err = ctypes.get_last_error() or k32.GetLastError()
+        return True if err == 32 else None
+    k32.CloseHandle(h)
+    return False
+
+
 def list_recordings() -> dict[str, list[Path]]:
     """날짜 -> 녹화 파일 목록 (녹화 중인 파일 제외)."""
     by_date: dict[str, list[Path]] = {}
@@ -116,8 +136,11 @@ def list_recordings() -> dict[str, list[Path]]:
         st = f.stat()
         if st.st_size == 0:
             continue
-        if now - st.st_mtime < SETTLE_SECONDS:
-            log.info("skip (아직 녹화 중?): %s", f.name)
+        # 1순위: 파일 잠금(OBS 가 아직 쓰는 중). 2순위(판단 불가 시): 최근 수정 시각.
+        in_use = is_in_use(f)
+        busy = in_use if in_use is not None else (now - st.st_mtime < SETTLE_SECONDS)
+        if busy:
+            log.info("skip (아직 녹화 중): %s", f.name)
             continue
         by_date.setdefault(m.group(1), []).append(f)
     return by_date
