@@ -1,0 +1,21 @@
+title: 취준일기
+description: 매일 공부하는 화면을 타임랩스로 남깁니다.
+url: https://diary.yooniicode.site
+baseurl: ""
+author: Yoonji Lee
+main_blog: https://yooniicode.site
+timezone: Asia/Seoul
+lang: ko
+permalink: /:year/:month/:day/
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+defaults:
+  - scope:
+      path: ""
+      type: posts
+    values:
+      layout: post
+exclude:
+  - tools/
+  - README.md

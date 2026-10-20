@@ -1,0 +1,17 @@
+---
+layout: default
+---
+<article class="entry">
+  <h2>{{ page.title }}</h2>
+  <p class="meta">
+    <span>{{ page.date | date: "%Y년 %-m월 %-d일" }}</span>
+    {% if page.recorded_minutes %}<span>녹화 {{ page.recorded_minutes }}분</span>{% endif %}
+    {% if page.output_seconds %}<span>타임랩스 {{ page.output_seconds }}초 ({{ page.speed }}배속)</span>{% endif %}
+  </p>
+  {% if page.video %}
+  <video controls preload="metadata" playsinline muted {% if page.poster %}poster="{{ page.poster }}"{% endif %}>
+    <source src="{{ page.video }}" type="video/mp4">
+  </video>
+  {% endif %}
+  <div class="note">{{ content }}</div>
+</article>

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% if page.title %}{{ page.title }} · {% endif %}{{ site.title }}</title>
+  {% seo title=false %}
+  {% feed_meta %}
+  <style>
+    :root {
+      --bg: #fbfaf7; --fg: #1d1d1b; --muted: #6b6a66; --line: #e6e3dc;
+      --accent: #c2410c; --card: #ffffff;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #141412; --fg: #ecebe6; --muted: #9b9a94; --line: #2a2926; --accent: #fb923c; --card: #1c1c19; }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--fg);
+      font-family: -apple-system, "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+      line-height: 1.65; -webkit-font-smoothing: antialiased; }
+    a { color: inherit; }
+    .wrap { max-width: 860px; margin: 0 auto; padding: 0 16px; }
+    header.site { display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
+      padding: 28px 0 20px; border-bottom: 1px solid var(--line); }
+    header.site h1 { margin: 0; font-size: 1.35rem; letter-spacing: -0.01em; }
+    header.site h1 a { text-decoration: none; }
+    header.site nav a { color: var(--muted); font-size: 0.9rem; text-decoration: none; }
+    header.site nav a:hover { color: var(--accent); }
+    main { padding: 28px 0 60px; }
+    article.entry { margin: 0 0 44px; }
+    article.entry h2 { margin: 0 0 6px; font-size: 1.1rem; }
+    article.entry h2 a { text-decoration: none; }
+    article.entry h2 a:hover { color: var(--accent); }
+    .meta { color: var(--muted); font-size: 0.85rem; margin: 0 0 12px; }
+    .meta span + span::before { content: "·"; margin: 0 8px; }
+    video { display: block; width: 100%; aspect-ratio: 16 / 9; background: #000; border-radius: 10px;
+      border: 1px solid var(--line); }
+    .note { margin-top: 12px; }
+    .note p { margin: 0 0 0.6em; }
+    footer.site { border-top: 1px solid var(--line); padding: 20px 0 40px; color: var(--muted); font-size: 0.82rem; }
+    .empty { color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="site">
+      <h1><a href="{{ '/' | relative_url }}">{{ site.title }}</a></h1>
+      <nav><a href="{{ site.main_blog }}">← YooniCode</a></nav>
+    </header>
+    <main>{{ content }}</main>
+    <footer class="site">OBS 2fps 녹화를 매일 밤 자동으로 타임랩스로 묶어 올립니다. © {{ site.author }}</footer>
+  </div>
+</body>
+</html>

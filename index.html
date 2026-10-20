@@ -1,0 +1,22 @@
+---
+layout: default
+---
+{% if site.posts.size == 0 %}
+<p class="empty">아직 올라온 날이 없어요. 오늘 밤 첫 영상이 올라옵니다.</p>
+{% endif %}
+{% for post in site.posts %}
+<article class="entry">
+  <h2><a href="{{ post.url | relative_url }}">{{ post.title }}</a></h2>
+  <p class="meta">
+    <span>{{ post.date | date: "%Y년 %-m월 %-d일" }}</span>
+    {% if post.recorded_minutes %}<span>녹화 {{ post.recorded_minutes }}분</span>{% endif %}
+    {% if post.output_seconds %}<span>타임랩스 {{ post.output_seconds }}초 ({{ post.speed }}배속)</span>{% endif %}
+  </p>
+  {% if post.video %}
+  <video controls preload="none" playsinline muted {% if post.poster %}poster="{{ post.poster }}"{% endif %}>
+    <source src="{{ post.video }}" type="video/mp4">
+  </video>
+  {% endif %}
+  {% if post.content != "" %}<div class="note">{{ post.content }}</div>{% endif %}
+</article>
+{% endfor %}
