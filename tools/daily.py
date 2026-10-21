@@ -2,7 +2,7 @@
 """취준일기 타임랩스 자동화.
 
 흐름:
-  1. %USERPROFILE%\\Videos\\Timelapse 에서 OBS 녹화 파일(YYYY-MM-DD hh-mm-ss.mkv)을 찾는다.
+  1. OBS "Timelapse" 프로필의 녹화 경로(basic.ini 에서 읽음)에서 녹화 파일(YYYY-MM-DD hh-mm-ss.mkv)을 찾는다.
   2. 아직 처리 안 된 파일을 날짜별로 묶는다. 같은 날짜의 파일은 모두 모아 다시 인코딩한다
      (하루에 여러 번 녹화해도 결과는 항상 "그날 전체" 하나).
   3. ffmpeg 로 이어붙이고 배속을 올려 720p 무음 mp4 로 만든다.
@@ -30,7 +30,7 @@ import time
 from pathlib import Path
 
 GH_REPO = "yooniicode/diary"
-REC_DIR = Path.home() / "Videos" / "Timelapse"
+OBS_PROFILE = "Timelapse"   # 이 OBS 프로필의 녹화 경로를 그대로 따라간다
 REPO_DIR = Path(__file__).resolve().parent.parent
 POSTS_DIR = REPO_DIR / "_posts"
 APP_DIR = Path(os.environ.get("LOCALAPPDATA", str(Path.home()))) / "DiaryTimelapse"
@@ -44,6 +44,37 @@ OUT_WIDTH = 1280
 SETTLE_SECONDS = 180      # 마지막 수정 후 이 시간 안 지난 파일은 "녹화 중"으로 보고 건너뜀
 PRUNE_DAYS = 30           # 처리 완료된 원본 mkv 보관 기간
 TZ = "+0900"
+
+
+def obs_record_dir() -> Path:
+    """OBS 프로필(basic.ini)의 녹화 경로를 읽는다. OBS 설정에서 경로를 바꾸면 여기도 자동으로 따라간다.
+    Simple 모드는 [SimpleOutput] FilePath, Advanced 모드는 [AdvOut] RecFilePath."""
+    fallback = Path.home() / "Videos" / "Timelapse"
+    ini = Path(os.environ.get("APPDATA", "")) / "obs-studio" / "basic" / "profiles" / OBS_PROFILE / "basic.ini"
+    try:
+        text = ini.read_text(encoding="utf-8-sig")
+    except OSError:
+        return fallback
+    section, mode, simple, adv = None, None, None, None
+    for raw in text.splitlines():
+        line = raw.strip()
+        if line.startswith("[") and line.endswith("]"):
+            section = line[1:-1]
+            continue
+        key, _, val = line.partition("=")
+        if section == "Output" and key == "Mode":
+            mode = val
+        elif section == "SimpleOutput" and key == "FilePath":
+            simple = val
+        elif section == "AdvOut" and key == "RecFilePath":
+            adv = val
+    val = adv if (mode == "Advanced" and adv) else simple
+    if not val:
+        return fallback
+    return Path(val.replace("\\\\", "\\"))   # ini 는 백슬래시를 \\ 로 이스케이프
+
+
+REC_DIR = obs_record_dir()
 
 FNAME_RE = re.compile(r"^(\d{4}-\d{2}-\d{2}) \d{2}-\d{2}-\d{2}\.mkv$")
 
@@ -285,6 +316,7 @@ def main() -> int:
         log.error("%s", e)
         return 2
 
+    log.info("녹화 폴더: %s (OBS 프로필 %s)", REC_DIR, OBS_PROFILE)
     state = load_state()
     by_date = list_recordings()
     if args.date:
